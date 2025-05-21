@@ -1,9 +1,20 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+const fs = require('fs');
+const xml2js = require('xml2js');
 
-const url = 'https://www.cookwell.com/recipe/grilled-chicken-flatbread';
+async function fetchRecipeLinksFromSitemap(sitemapUrl) {
+    const response = await axios.get(sitemapUrl);
+    const xml = response.data;
+    const parser = new xml2js.Parser();
+    const result = await parser.parseStringPromise(xml);
 
-async function fetchData() {
+    const urls = result.urlset.url.map(url => url.loc[0]);
+    const recipeUrls = urls.filter(url => url.includes('/recipe/'));
+    return recipeUrls;
+}
+
+async function fetchData(url) {
     try{
         const response = await axios.get(url);
         const data = response.data;
@@ -48,6 +59,7 @@ async function fetchData() {
         console.log('Recipe Description:', recipe.description);
         console.log('Ingredients:', recipe.ingredients);
         console.log('Instructions:', recipe.instructions);
+
         return recipe;
     }
     catch (error){
@@ -55,4 +67,22 @@ async function fetchData() {
     }
 }
 
-fetchData();
+async function ultimateScraper() {
+    const sitemapUrl = 'https://www.cookwell.com/server-sitemap.xml'; 
+    const recipeUrls = await fetchRecipeLinksFromSitemap(sitemapUrl);
+
+    const allRecipes = [];
+
+    for (const url of recipeUrls) {
+        console.log('Fetching data from:', url);
+        const recipe = await fetchData(url);
+        if (recipe) {
+            allRecipes.push(recipe);
+        }
+    }
+
+    fs.writeFileSync('all_recipes.json', JSON.stringify(allRecipes, null, 2), 'utf-8');
+    console.log('All recipes saved to all_recipes.json');
+}
+
+ultimateScraper();
