@@ -66,6 +66,9 @@ async function generateShoppingList() {
 
         console.log(shoppingListText);
 
+        fs.writeFileSync('shopping_list.txt', shoppingListText, 'utf-8');
+        console.log('Lista zakupów została zapisana do shopping_list.txt');
+
         rl.close();
     });
     
