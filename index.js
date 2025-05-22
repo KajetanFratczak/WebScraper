@@ -27,7 +27,10 @@ async function fetchData(url) {
             title: recipeTitle,
             description: recipeDescription,
             ingredients: [],
-            instructions: []
+            instructions: [],
+            nutrition: {
+                calories: null
+            }
         };
 
         $('div.container.grid-cols-2.lg\\:grid div.rounded-4\\/3em ul li[data-testid="ingredient-group"]').each((index, group) => {            
@@ -56,10 +59,19 @@ async function fetchData(url) {
             }
         });
 
+        $('script[type="application/ld+json"]').each((index, element) => {
+            const content = $(element).html();
+            if (content && content.includes('calories')) {
+                const jsonData = JSON.parse(content);
+                recipe.nutrition.calories = jsonData.nutrition?.calories 
+            }
+        });
+
         console.log('Recipe Title:', recipe.title);
         console.log('Recipe Description:', recipe.description);
         console.log('Ingredients:', recipe.ingredients);
         console.log('Instructions:', recipe.instructions);
+        console.log('Nutrition:', recipe.nutrition);
 
         return recipe;
     }

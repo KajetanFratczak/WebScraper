@@ -22,15 +22,23 @@ async function generateShoppingList() {
         const selectedRecipes = selectedRecipeIndices.map(index => recipesData[index]);
 
         const ingredientsMap = new Map();
-        let shoppingListText = 'LISTA ZAKUPÓW\n==============\n';
 
         selectedRecipes.forEach(recipe => {
             recipe.ingredients.forEach(group => {
                 group.forEach(ingredient => {
-                    
+                    const key = ingredient.name.trim().toLowerCase();
+                    if (!ingredientsMap.has(key)){
+                        ingredientsMap.set(key, true);
+                        const amount = ingredient.amount?.trim() || '-';
+                        shoppingListText += `${ingredient.name}: ${amount}\n`;
+                    }
                 });
             });
+            
         });
+
+        shoppingListText += '\n\n';
+        console.log(shoppingListText);
 
         rl.close();
     });
