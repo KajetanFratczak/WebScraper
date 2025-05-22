@@ -21,23 +21,49 @@ async function generateShoppingList() {
         const selectedRecipeIndices = answer.split(',').map(num => parseInt(num.trim()) - 1);
         const selectedRecipes = selectedRecipeIndices.map(index => recipesData[index]);
 
-        const ingredientsMap = new Map();
+        let shoppingListText = 'Lista zakupów:\n\n';
 
+        selectedRecipes.forEach(recipe => {
+            shoppingListText += `Przepis: ${recipe.title}\n`;
+            shoppingListText += `Składniki:\n`;
+            recipe.ingredients.forEach(group => {
+                group.forEach(ingredient => {
+                    const amount = ingredient.amount ? `${ingredient.amount} ` : '';
+                    shoppingListText += `- ${amount}${ingredient.name}\n`;
+                });
+            });
+
+            shoppingListText += '\nInstrukcje:\n';
+            recipe.instructions.forEach((instruction, index) => {
+                shoppingListText += `${index + 1}: ${instruction}\n`;
+            });
+
+            shoppingListText += '\n';
+        });
+
+
+        const ingredientsMap = new Map();
         selectedRecipes.forEach(recipe => {
             recipe.ingredients.forEach(group => {
                 group.forEach(ingredient => {
                     const key = ingredient.name.trim().toLowerCase();
-                    if (!ingredientsMap.has(key)){
-                        ingredientsMap.set(key, true);
-                        const amount = ingredient.amount?.trim() || '-';
-                        shoppingListText += `${ingredient.name}: ${amount}\n`;
+                    const amount = ingredient.amount ? `${ingredient.amount} ` : '';
+                    if (ingredientsMap.has(key)) {
+                        const existingAmounts = ingredientsMap.get(key);
+
+                        ingredientsMap.set(key, existingAmounts + ', ' + amount);
+                    } else {
+                        ingredientsMap.set(key, amount);
                     }
                 });
             });
-            
         });
 
-        shoppingListText += '\n\n';
+        shoppingListText += 'Podsumowanie:\n';
+        ingredientsMap.forEach((amount, ingredient) => {
+            shoppingListText += `- ${amount}${ingredient}\n`;
+        });
+
         console.log(shoppingListText);
 
         rl.close();
