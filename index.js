@@ -20,7 +20,8 @@ async function fetchData(url) {
         const data = response.data;
         const $ = cheerio.load(data);
 
-        const recipeTitle = $('h1').text();
+        let recipeTitle = $('h1').text();
+        recipeTitle = recipeTitle.replace("Free Spice Guide", "");
         const recipeDescription = $('h2').text();
         const recipe = {
             title: recipeTitle,
